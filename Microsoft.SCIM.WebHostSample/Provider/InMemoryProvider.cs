@@ -3,18 +3,47 @@
 namespace Microsoft.SCIM.WebHostSample.Provider
 {
     using System;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
     using Microsoft.SCIM;
+    using Microsoft.SCIM.WebHostSample.Resources;
 
     public class InMemoryProvider : ProviderBase
     {
         private readonly ProviderBase groupProvider;
         private readonly ProviderBase userProvider;
 
+        private static readonly Lazy<IReadOnlyCollection<TypeScheme>> TypeSchema =
+            new Lazy<IReadOnlyCollection<TypeScheme>>(
+                () =>
+                    new TypeScheme[] { SampleTypeScheme.UserTypeSceme, SampleTypeScheme.GroupTypeSceme, SampleTypeScheme.EnterpriseUserTypeScheme });
+
+        private static readonly Lazy<IReadOnlyCollection<Core2ResourceType>> Types =
+            new Lazy<IReadOnlyCollection<Core2ResourceType>>(
+                () =>
+                    new Core2ResourceType[] { SampleResourceTypes.userResourceType, SampleResourceTypes.groupResourceType } );
+
+
         public InMemoryProvider()
         {
             this.groupProvider = new InMemoryGroupProvider();
             this.userProvider = new InMemoryUserProvider();
+        }
+
+        public override IReadOnlyCollection<Core2ResourceType> ResourceTypes
+        {
+            get
+            {
+                return InMemoryProvider.Types.Value;
+            }
+        }
+
+        public override IReadOnlyCollection<TypeScheme> Schema
+        {
+            get
+            {
+                return InMemoryProvider.TypeSchema.Value;
+            }
         }
 
         public override Task<Resource> CreateAsync(Resource resource, string correlationIdentifier)
